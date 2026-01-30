@@ -1,11 +1,116 @@
-<div id="container" style="width: 100%; height: 100vh; margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center;">
-    <canvas id="render"></canvas>
-    <div id="stats" style="position: absolute; top: 10px; left: 10px; color: white; background-color: rgba(0,0,0,0.5); padding: 5px; font-family: monospace;"></div>
-</div>
-<script src="camera.js"></script>
-<script src="shape.js"></script>
-<script src="3d_utils.js"></script>
-<script src="canvas_utils.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Render</title>
+    <link rel="stylesheet" href="styles/style.css">
+</head>
 
 
-<script src=index.js></script>
+<body>
+    <div id="app-container">
+        <main id="main-content">
+            <div id="top-bar">
+                <input type="text" id="function-input" placeholder="Enter a function, i.e: Math.sin(x / 10) * Math.cos(y / 10) * 20 + t">
+                <select id="function-presets"></select>
+            </div>
+            <div id="render-container">
+                <canvas id="render"></canvas>
+            </div>
+            <div id="stats"></div>
+        </main>
+        <aside id="settings-panel">
+            <h2>Settings</h2>
+            <button id="help-button">?</button>
+            <div id="help-modal" class="hidden">
+                <h3>Shortcuts</h3>
+                <ul>
+                    <li><b>F:</b> Next function preset</li>
+                    <li><b>G:</b> Previous function preset</li>
+                    <li><b>T / Enter:</b> Focus function input</li>
+                    <li><b>Tab:</b> Focus & lock canvas</li>
+                    <li><b>Escape:</b> Release focus/cursor</li>
+                    <li><b>ZQSD/WASD:</b> Move camera</li>
+                    <li><b>Arrow Keys:</b> Rotate shape</li>
+                    <li><b>Ctrl + +/-:</b> Adjust Nx/Ny</li>
+                    <li><b>Ctrl + Arrow Keys:</b> Adjust boundaries</li>
+                </ul>
+            </div>
+            <table>
+                <tr>
+                    <td><button id="reset-camera">Reset Camera</button></td>
+                    <td><button id="reset-shape">Reset Shape</button></td>
+                </tr>
+                <tr>
+                    <td><label for="fps-select">Max FPS</label></td>
+                    <td>
+                        <select id="fps-select">
+                            <option value="30">30</option>
+                            <option value="45">45</option>
+                            <option value="74" selected>74</option>
+                            <option value="120">120</option>
+                            <option value="500">500</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr><td colspan="2"><hr></td></tr>
+                <tr>
+                    <td><label for="nx-slider">Nx: <span id="nx-value">47</span></label></td>
+                    <td><input type="range" id="nx-slider" min="2" max="200" value="47"></td>
+                </tr>
+                <tr>
+                    <td><label for="ny-slider">Ny: <span id="ny-value">47</span></label></td>
+                    <td><input type="range" id="ny-slider" min="2" max="200" value="47"></td>
+                </tr>
+                <tr>
+                    <td><label for="x-min-input">x_min</label></td>
+                    <td><input type="number" id="x-min-input" value="-50"></td>
+                </tr>
+                <tr>
+                    <td><label for="x-max-input">x_max</label></td>
+                    <td><input type="number" id="x-max-input" value="50"></td>
+                </tr>
+                <tr>
+                    <td><label for="y-min-input">y_min</label></td>
+                    <td><input type="number" id="y-min-input" value="-50"></td>
+                </tr>
+                <tr>
+                    <td><label for="y-max-input">y_max</label></td>
+                    <td><input type="number" id="y-max-input" value="50"></td>
+                </tr>
+                <tr><td colspan="2"><hr></td></tr>
+                <tr>
+                    <td><label for="linewidth-toggle">Dynamic Width</label></td>
+                    <td><input type="checkbox" id="linewidth-toggle" checked></td>
+                </tr>
+                <tr>
+                    <td><label for="grid-toggle">Grid</label></td>
+                    <td><input type="checkbox" id="grid-toggle" checked></td>
+                </tr>
+                <tr>
+                    <td><label for="compass-toggle">Compass</label></td>
+                    <td><input type="checkbox" id="compass-toggle" checked></td>
+                </tr>
+                <tr><td colspan="2"><hr></td></tr>
+                <tr>
+                    <td><label for="z-coloring-toggle">Z Coloring</label></td>
+                    <td><input type="checkbox" id="z-coloring-toggle" checked></td>
+                </tr>
+            </table>
+        </aside>
+    </div>
+
+    <script src="libs/perlin.js"></script>
+    <script src="src/camera.js"></script>
+    <script src="src/shape.js"></script>
+    <script src="src/3d.js"></script>
+    <script src="src/utils/canvas_utils.js"></script>
+    <script src="src/utils/input_utils.js"></script>
+    <script src="src/utils/page_utils.js"></script>
+
+    <script src="src/index.js"></script>
+</body>
+
+</html>

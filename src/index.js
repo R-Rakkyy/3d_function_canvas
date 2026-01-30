@@ -2,15 +2,18 @@
 const BACKGROUND_COLOR      = "#ad935a"
 const OTHER_COLOR           = "#535741"
 const FOREGROUND_COLOR      = "hsl(300, 4%, 14%)"
-const TOTAL_FPS             = 74
-const OPTIMIZATION          = true // Useless for now, always on
+let   TOTAL_FPS             = 74
+let   OPTIMIZATION          = true // Useless for now, always on
 
 
 /* Global variables */
 const render                = document.getElementById("render")
 const statsDiv              = document.getElementById("stats")
-const camera                = new Camera(0, 20, -50, 0, 0)
-const shape                 = new Shape()
+const camera                = new Camera(0, 25, -100, 0, 0)
+
+
+const shape                 = new Shape(new Function('x', 'y', 'time', 'return ' + PRESET_FUNCTIONS[current_preset_index].formula))
+
 let   ctx                   = null
 let   renderables           = []
 let   lastFrameTime         = 0
@@ -84,14 +87,16 @@ function renderVertices() {
                     const { p_world: p2_world, p_cam: p2_cam } = v2_transformed
 
                     const avg_z = (p1_world.z + p2_world.z) / 2
-                    const color = getColorFromZ(avg_z)
-
-                    const distance = Math.sqrt(
-                        (((p1_world.x + p2_world.x) / 2) - camera.x) ** 2 +
-                        (((p1_world.y + p2_world.y) / 2) - camera.y) ** 2 +
-                        (((p1_world.z + p2_world.z) / 2) - camera.z) ** 2
-                    )
-                    const width = getRealWidth(distance, 5)
+                    const color = SETTINGS.z_coloring ? getColorFromZ(avg_z) : FOREGROUND_COLOR;
+                    let width = 2;
+                    if (SETTINGS.dynamic_width) {
+                        const distance = Math.sqrt(
+                            (((p1_world.x + p2_world.x) / 2) - camera.x) ** 2 +
+                            (((p1_world.y + p2_world.y) / 2) - camera.y) ** 2 +
+                            (((p1_world.z + p2_world.z) / 2) - camera.z) ** 2
+                        )
+                        width = getRealWidth(distance, 5)
+                    }
                     renderables.push({
                         type: 'line', p1: p1_world, p2: p2_world, color, width,
                         depth: (p1_cam.z + p2_cam.z) / 2
@@ -105,14 +110,17 @@ function renderVertices() {
                     const { p_world: p2_world, p_cam: p2_cam } = v2_transformed
 
                     const avg_z = (p1_world.z + p2_world.z) / 2
-                    const color = getColorFromZ(avg_z)
+                    const color = SETTINGS.z_coloring ? getColorFromZ(avg_z) : FOREGROUND_COLOR;
 
-                    const distance = Math.sqrt(
-                        (((p1_world.x + p2_world.x) / 2) - camera.x) ** 2 +
-                        (((p1_world.y + p2_world.y) / 2) - camera.y) ** 2 +
-                        (((p1_world.z + p2_world.z) / 2) - camera.z) ** 2
-                    )
-                    const width = getRealWidth(distance, 5)
+                    let width = 2;
+                    if (SETTINGS.dynamic_width) {
+                        const distance = Math.sqrt(
+                            (((p1_world.x + p2_world.x) / 2) - camera.x) ** 2 +
+                            (((p1_world.y + p2_world.y) / 2) - camera.y) ** 2 +
+                            (((p1_world.z + p2_world.z) / 2) - camera.z) ** 2
+                        )
+                        width = getRealWidth(distance, 5)
+                    }
                     renderables.push({
                         type: 'line', p1: p1_world, p2: p2_world, color, width,
                         depth: (p1_cam.z + p2_cam.z) / 2
@@ -120,16 +128,20 @@ function renderVertices() {
                 }
             }
 
+            if (!SETTINGS.z_coloring) continue; // Points wouldn't show anyway
             const { p_local, p_world, p_cam } = v1_transformed
             const depth = p_local.z
-            const color = getColorFromDepth(depth)
+            const color = SETTINGS.z_coloring ? getColorFromDepth(depth) : FOREGROUND_COLOR;
 
-            const distance = Math.sqrt(
-                (p_world.x - camera.x) ** 2 +
-                (p_world.y - camera.y) ** 2 +
-                (p_world.z - camera.z) ** 2
-            )
-            const width = getRealWidth(distance, 2)
+            let width = 1;
+            if (SETTINGS.dynamic_width) {
+                const distance = Math.sqrt(
+                    (p_world.x - camera.x) ** 2 +
+                    (p_world.y - camera.y) ** 2 +
+                    (p_world.z - camera.z) ** 2
+                )
+                width = getRealWidth(distance, 2)
+            }
             renderables.push({
                 type: 'point', p: p_world, color, width,
                 depth: p_cam.z - 5 // slight offset to render points in front of lines
@@ -149,13 +161,14 @@ function frame(currentTime) {
     const startTime = performance.now()
 
     clear()
-
     camera.update(deltaT)
     shape.update(deltaT)
 
     renderables = []
-    drawGrid()
-    drawShapeGrid()
+    if (SETTINGS.show_grid) {
+        drawGrid()
+        drawShapeGrid()
+    }
     renderVertices()
 
     renderables.sort((a, b) => b.depth - a.depth)
@@ -166,14 +179,15 @@ function frame(currentTime) {
             drawPoint3D(renderable.p, renderable.color, renderable.width)
     })
 
-    drawCompass()
-    drawShapeCompass()
+    if (SETTINGS.show_compass) {
+        drawCompass()
+        drawShapeCompass()
+    }
 
     displayStats(elapsed, performance.now() - startTime)
 }
 
 initRender()
-window.addEventListener('resize', () => { resizeRender() })
-window.addEventListener('orientationchange', () => { resizeRender() })
-
+initPage()
+initInputs()
 requestAnimationFrame(frame);

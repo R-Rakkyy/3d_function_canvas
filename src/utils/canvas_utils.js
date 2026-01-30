@@ -1,12 +1,14 @@
 function resizeRender() {
-    render.width  = Math.max(window.innerWidth * 0.574, 500)
-    render.height = Math.max(window.innerHeight * 0.774, 500)
+    const container     = document.getElementById('render-container');
+    render.width        = container.clientWidth;
+    render.height       = container.clientHeight;
 }
 function initRender() {
     LOGGER('Initializing render...')
-
     resizeRender()
     ctx = render.getContext("2d")
+    window.addEventListener('resize', () => { resizeRender() })
+    window.addEventListener('orientationchange', () => { resizeRender() })
     LOGGER('Render initialized.')
 }
 function clear() {
@@ -149,46 +151,58 @@ function drawTriangle3D(p1_world, p2_world, p3_world, color, width = 3) {
 }
 
 function drawGrid() {
-    const gridSize      = 100
+    const x_span        = shape.x_max - shape.x_min
+    const z_span        = shape.y_max - shape.y_min
+    const gridSize      = Math.max(x_span, z_span) * 3
     const gridStep      = 5
-    const gridY         = -30
-    const gridColor     = "#8a7d55"
+    const gridY         = shape.z - (Math.max(x_span, z_span) / 2) - 10
+    const gridColor     = "#68592d"
     const gridLineWidth = 1
 
     for (let i = -gridSize / 2; i <= gridSize / 2; i += gridStep) {
         addToRender('line', {
-            p1: { x: i, y: gridY, z: -gridSize / 2 },
-            p2: { x: i, y: gridY, z: gridSize / 2 },
+            p1: { x: shape.x + i, y: gridY, z: shape.z - gridSize / 2 },
+            p2: { x: shape.x + i, y: gridY, z: shape.z + gridSize / 2 },
             color: gridColor, width: gridLineWidth
         })
 
         addToRender('line', {
-            p1: { x: -gridSize / 2, y: gridY, z: i },
-            p2: { x: gridSize / 2, y: gridY, z: i },
+            p1: { x: shape.x - gridSize / 2, y: gridY, z: shape.z + i },
+            p2: { x: shape.x + gridSize / 2, y: gridY, z: shape.z + i },
             color: gridColor, width: gridLineWidth
         })
     }
 }
 
 function drawShapeGrid() {
-    const gridSize      = (shape.x_max - shape.x_min) || 50
-    const gridStep      = 5
-    const gridZ         = 0; // Normal plane of the shape
-    const gridColor     = "#7d8a55"
-    const gridLineWidth = 1
+    const gridStep      = 5;
+    const gridColor     = "#5a643a";
+    const gridLineWidth = 1;
+    const gridZ         = 0; // depends on shape's local coordinates anyway
 
-    for (let i = -gridSize / 2; i <= gridSize / 2; i += gridStep) {
-        let p1_local = { x: i, y: -gridSize / 2, z: gridZ }
-        let p2_local = { x: i, y: gridSize / 2, z: gridZ }
-        let p1_world = rotate(p1_local, shape.theta, shape.phi, shape.psi)
-        let p2_world = rotate(p2_local, shape.theta, shape.phi, shape.psi)
-        addToRender('line', { p1: p1_world, p2: p2_world, color: gridColor, width: gridLineWidth })
+    for (let i = shape.x_min; i <= shape.x_max; i += gridStep) {
+        let p1_local = { x: i, y: shape.y_min, z: gridZ };
+        let p2_local = { x: i, y: shape.y_max, z: gridZ };
 
-        let p3_local = { x: -gridSize / 2, y: i, z: gridZ }
-        let p4_local = { x: gridSize / 2, y: i, z: gridZ }
-        let p3_world = rotate(p3_local, shape.theta, shape.phi, shape.psi)
-        let p4_world = rotate(p4_local, shape.theta, shape.phi, shape.psi)
-        addToRender('line', { p1: p3_world, p2: p4_world, color: gridColor, width: gridLineWidth })
+        let p1_world = rotate(p1_local, shape.theta, shape.phi, shape.psi);
+        p1_world.x += shape.x; p1_world.y += shape.y; p1_world.z += shape.z;
+
+        let p2_world = rotate(p2_local, shape.theta, shape.phi, shape.psi);
+        p2_world.x += shape.x; p2_world.y += shape.y; p2_world.z += shape.z;
+
+        addToRender('line', { p1: p1_world, p2: p2_world, color: gridColor, width: gridLineWidth });
+    }
+    for (let i = shape.y_min; i <= shape.y_max; i += gridStep) {
+        let p1_local = { x: shape.x_min, y: i, z: gridZ };
+        let p2_local = { x: shape.x_max, y: i, z: gridZ };
+
+        let p1_world = rotate(p1_local, shape.theta, shape.phi, shape.psi);
+        p1_world.x += shape.x; p1_world.y += shape.y; p1_world.z += shape.z;
+
+        let p2_world = rotate(p2_local, shape.theta, shape.phi, shape.psi);
+        p2_world.x += shape.x; p2_world.y += shape.y; p2_world.z += shape.z;
+
+        addToRender('line', { p1: p1_world, p2: p2_world, color: gridColor, width: gridLineWidth });
     }
 }
 
