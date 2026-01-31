@@ -49,17 +49,37 @@ class Shape {
         if (pressedKeys.has('arrowup'))       this.phi -= this.ROTATE_SPEED * deltaT
         if (pressedKeys.has('arrowdown'))     this.phi += this.ROTATE_SPEED * deltaT
 
+        if (isVertexRecalcStopped) return
+        
         this.computeVertices(performance.now() / 500)
     }
 
     computeVertices(time = 0) {
-        this.vertices = []
+        this.vertices = new Array(this.Nx * this.Ny) // preallocate array size
+        const rawFunc = this.custom_function
+        const func = (v1, v2) => {
+            const fn = (typeof rawFunc === 'function') ? rawFunc : (rawFunc && typeof rawFunc.func === 'function' ? rawFunc.func : (() => 0))
+            return fn(v1, v2, time) * this.depth_scale
+        }
+
         for (let i = 0; i < this.Nx; i++) {
-            let x = this.x_min + (this.x_max - this.x_min) * (i / (this.Nx - 1))
+            const u = this.x_min + (this.x_max - this.x_min) * (i / (this.Nx - 1))
             for (let j = 0; j < this.Ny; j++) {
-                let y = this.y_min + (this.y_max - this.y_min) * (j / (this.Ny - 1))
-                let z = this.custom_function(x, y, time) * this.depth_scale
-                this.vertices.push({ x: x, y: y, z: z })
+                const v = this.y_min + (this.y_max - this.y_min) * (j / (this.Ny - 1))
+                
+                let x, y, z
+                switch (SETTINGS.function_axis) {
+                    case 'x':
+                        z = u; y = v; x = func(y, z)
+                        break
+                    case 'y':
+                        x = u; z = v; y = func(x, z)
+                        break
+                    default:
+                        x = u; y = v; z = func(x, y)
+                        break
+                }
+                this.vertices[i * this.Ny + j] = { x, y, z }
             }
         }
         if (SETTINGS.depth_smoother)
@@ -67,7 +87,7 @@ class Shape {
     }
 
     smoothDepth() {
-        const smoothed_vertices = []
+        const smoothed_vertices = new Array(this.Nx * this.Ny) // preallocate array size
         for (let i = 0; i < this.Nx; i++) {
             for (let j = 0; j < this.Ny; j++) {
                 let sum = 0
@@ -84,7 +104,7 @@ class Shape {
                 }
                 const current_vertex = this.vertices[i * this.Ny + j]
                 const smoothed_z = current_vertex.z * (1 - SETTINGS.depth_smoother_factor) + (sum / count) * SETTINGS.depth_smoother_factor
-                smoothed_vertices.push({
+                smoothed_vertices[i * this.Ny + j] = ({
                     x: current_vertex.x,
                     y: current_vertex.y,
                     z: smoothed_z

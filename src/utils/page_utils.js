@@ -2,17 +2,17 @@ let SETTINGS = {
     dynamic_width: true,
     show_grid: false,
     show_compass: true,
-    z_coloring: true,
+    coloring_mode: 'axis', // 'axis', 'depth', or 'none'
+    coloring_axis: 'z',    // 'x', 'y', 'z'
     complex_mode: false,
     display_points: true,
 
-    function_axis: 'z', // disabled
+    function_axis: 'z',
     
     depth_smoother: false,
     depth_smoother_factor: 0.5,
     
-    render_type: 'line',
-    multi_process: false
+    render_type: 'line'
 }
 
 let current_preset_index = 0
@@ -36,16 +36,20 @@ function updateUIFromState() {
     document.getElementById('linewidth-toggle').checked             = SETTINGS.dynamic_width
     document.getElementById('grid-toggle').checked                  = SETTINGS.show_grid
     document.getElementById('compass-toggle').checked               = SETTINGS.show_compass
-    document.getElementById('z-coloring-toggle').checked            = SETTINGS.z_coloring
     document.getElementById('function-type-toggle').checked         = SETTINGS.complex_mode
     document.getElementById('display-points-toggle').checked        = SETTINGS.display_points
     document.getElementById('depth-smoother-toggle').checked        = SETTINGS.depth_smoother
     document.getElementById('depth-smoother-slider').value          = SETTINGS.depth_smoother_factor
     document.getElementById('depth-smoother-value').textContent     = SETTINGS.depth_smoother_factor
     document.getElementById('render-type-select').value             = SETTINGS.render_type
+    document.getElementById('coloring-mode-select').value           = SETTINGS.coloring_mode
+    document.getElementById('coloring-axis-select').value           = SETTINGS.coloring_axis
     document.getElementById('function-presets').selectedIndex       = current_preset_index
     document.getElementById('function-input').value                 = (SETTINGS.complex_mode ? PRESET_COMPLEX_FUNCTIONS : PRESET_FUNCTIONS)[current_preset_index].formula
-    
+    document.getElementById('pause-toggle').checked                 = isPaused
+    document.getElementById('stop-vertex-recalc-toggle').checked    = isVertexRecalcStopped
+    document.getElementById('function-axis-select').value           = SETTINGS.function_axis
+
     DOM.syncXDisplays(shape)
     DOM.syncYDisplays(shape)
 }
@@ -69,8 +73,11 @@ function initToggles() {
     grid_toggle.addEventListener('change', () => SETTINGS.show_grid = grid_toggle.checked)
     const compass_toggle    = document.getElementById('compass-toggle')
     compass_toggle.addEventListener('change', () => SETTINGS.show_compass = compass_toggle.checked)
-    const z_coloring_toggle = document.getElementById('z-coloring-toggle')
-    z_coloring_toggle.addEventListener('change', () => SETTINGS.z_coloring = z_coloring_toggle.checked)
+    const coloring_mode_select = document.getElementById('coloring-mode-select')
+    coloring_mode_select.addEventListener('change', () => SETTINGS.coloring_mode = coloring_mode_select.value)
+    const coloring_axis_select = document.getElementById('coloring-axis-select')
+    coloring_axis_select.addEventListener('change', () => SETTINGS.coloring_axis = coloring_axis_select.value)
+    
     const display_points_toggle = document.getElementById('display-points-toggle')
     if (display_points_toggle) display_points_toggle.addEventListener('change', () => SETTINGS.display_points = display_points_toggle.checked)
     const function_type_toggle = document.getElementById('function-type-toggle')
@@ -95,6 +102,11 @@ function initToggles() {
 
     const render_type_select = document.getElementById('render-type-select')
     render_type_select.addEventListener('change', () => SETTINGS.render_type = render_type_select.value)
+
+    const pause_toggle = document.getElementById('pause-toggle')
+    pause_toggle.addEventListener('change', () => isPaused = pause_toggle.checked)
+    const stop_vertex_recalc_toggle = document.getElementById('stop-vertex-recalc-toggle')
+    stop_vertex_recalc_toggle.addEventListener('change', () => isVertexRecalcStopped = stop_vertex_recalc_toggle.checked)
 }
 
 function initRange() {

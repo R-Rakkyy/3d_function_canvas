@@ -55,10 +55,20 @@ function transformToCameraView(p_world) {
 }
 
 
-function getColorFromZ(z) {
-    const min_z                 = -20
-    const max_z                 = 20
-    const percentage            = (Math.max(min_z, Math.min(z, max_z)) - min_z) / (max_z - min_z)
+function getColorFromAxis(val, axis) {
+    if (SETTINGS.coloring_mode.toLowerCase() === 'none') return OTHER_COLOR
+    let min_val = -20
+    let max_val = 20
+
+    if (axis === 'x') {
+        min_val = shape.x_min
+        max_val = shape.x_max
+    } else if (axis === 'y') {
+        min_val = shape.y_min
+        max_val = shape.y_max
+    }
+
+    const percentage            = (Math.max(min_val, Math.min(val, max_val)) - min_val) / (max_val - min_val)
 
     const start_hue             = 120
     const end_hue               = 10
@@ -75,7 +85,30 @@ function getColorFromZ(z) {
     return `hsl(${hue}, ${saturation}%, ${lightness}%)`
 }
 
+function crossProduct(v1, v2) {
+    return {
+        x: v1.y * v2.z - v1.z * v2.y,
+        y: v1.z * v2.x - v1.x * v2.z,
+        z: v1.x * v2.y - v1.y * v2.x
+    }
+}
+
+function normalize(v) {
+    const length = Math.sqrt(v.x * v.x + v.y * v.y + v.z * v.z)
+    if (length === 0) return { x: 0, y: 0, z: 0 }
+    return { x: v.x / length, y: v.y / length, z: v.z / length }
+}
+
+function dotProduct(v1, v2) {
+    return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z
+}
+
+function subtract(v1, v2) {
+    return { x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z }
+}
+
 function getColorFromDepth(depth) {
+    if (SETTINGS.coloring_mode.toLowerCase() === 'none') return OTHER_COLOR
     const min_depth             = -5
     const max_depth             = 5
     const percentage            = (Math.max(min_depth, Math.min(depth, max_depth)) - min_depth) / (max_depth - min_depth)

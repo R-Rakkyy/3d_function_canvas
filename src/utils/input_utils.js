@@ -14,7 +14,11 @@ function initFunctionPresets() {
         const presets           = SETTINGS.complex_mode ? PRESET_COMPLEX_FUNCTIONS : PRESET_FUNCTIONS
         const formula           = presets[current_preset_index].formula
         document.getElementById('function-input').value = formula
-        shape.custom_function   = new CustomFunctionManager(formula).func
+        if (shape.custom_function && typeof shape.custom_function.updateFormula === 'function') {
+            shape.custom_function.updateFormula(formula)
+        } else {
+            shape.custom_function = new CustomFunctionManager(formula).func
+        }
         if (typeof applyPresetParams === 'function') applyPresetParams(formula)
     })
 }
@@ -30,7 +34,11 @@ function updatePresetFunction() {
     if (current_preset_index >= presets.length)     current_preset_index = 0
     else if (current_preset_index < 0)              current_preset_index = presets.length - 1
     const formula                                   = presets[current_preset_index].formula
-    shape.custom_function                           = new CustomFunctionManager(formula).func
+    if (shape.custom_function && typeof shape.custom_function.updateFormula === 'function') {
+        shape.custom_function.updateFormula(formula)
+    } else {
+        shape.custom_function = new CustomFunctionManager(formula).func
+    }
     document.getElementById('function-input').value = formula
     document.getElementById('function-presets').selectedIndex = current_preset_index
 }
@@ -41,15 +49,23 @@ function initFunctionInput() {
     const function_input    = document.getElementById('function-input')
     function_input.addEventListener('keydown', (event) => {
         if (event.key === 'Enter') {
+            const oldFunc = shape.custom_function
             try {
-                const func = new CustomFunctionManager(function_input.value).func
-                shape.custom_function = func
+                if (shape.custom_function && typeof shape.custom_function.updateFormula === 'function') {
+                    shape.custom_function.updateFormula(function_input.value)
+                } else {
+                    shape.custom_function = new CustomFunctionManager(function_input.value).func
+                }
+                shape.computeVertices()
                 function_input.blur()
             } catch (e) {
-                alert('Invalid function')
+                shape.custom_function = oldFunc
+                try { shape.computeVertices() } catch (_) {}
+                alert('Invalid function: ' + e.message)
             }
         }
     })
+
     const function_axis_select = document.getElementById('function-axis-select')
     function_axis_select.addEventListener('change', () => {
         SETTINGS.function_axis = function_axis_select.value
@@ -169,7 +185,7 @@ function initKeyboardListeners() {
                 else render.requestPointerLock()
             }
             if (key === 'y') {
-                const modes                                                 = ['line', 'triangle', 'solid']
+                const modes                                                 = ['line', 'triangle', 'light-solid', 'solid']
                 const idx                                                   = modes.indexOf(SETTINGS.render_type)
                 const next                                                  = modes[(idx + 1) % modes.length]
                 SETTINGS.render_type                                        = next
@@ -223,11 +239,12 @@ function initKeyboardListeners() {
                     document.getElementById('function-input').focus()
                     break
                 case 'y':
-                    const modes                                                         = ['line', 'triangle', 'solid']
+                    const modes                                                         = ['line', 'triangle', 'light-solid', 'solid']
                     const idx                                                           = modes.indexOf(SETTINGS.render_type)
                     const next                                                          = modes[(idx + 1) % modes.length]
                     SETTINGS.render_type                                                = next
-                    if (select) document.getElementById('render-type-select').value     = next
+                    const select = document.getElementById('render-type-select')
+                    if (select) select.value = next
                     break
             }
         }

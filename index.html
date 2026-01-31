@@ -14,12 +14,12 @@
     <div id="app-container">
         <main id="main-content">
             <div id="top-bar">
-                <select id="function-axis-select" disabled>
-                    <option value="z">f(z)=</option>
-                    <option value="y">f(y)=</option>
-                    <option value="x">f(x)=</option>
+                <select id="function-axis-select">
+                    <option value="z">z =</option>
+                    <option value="y">y =</option>
+                    <option value="x">x =</option>
                 </select>
-                <input type="text" id="function-input" placeholder="Enter a function, i.e: Math.sin(x / 10) * Math.cos(y / 10) * 20 + t">
+                <input type="text" id="function-input" placeholder="Enter a function, i.e: Math.sin(x / 10) * Math.cos(y / 10) * 20 + t   |   You can also use z as Complex(x, y) and i => Complex(0,1)">
                 <select id="function-presets"></select>
             </div>
             <div id="render-container">
@@ -67,160 +67,166 @@
                     </div>
                 </div>
             </div>
-            <table>
-                <tr>
-                    <td><button id="reset-camera">Reset Camera</button></td>
-                    <td><button id="reset-shape">Reset Shape</button></td>
-                </tr>
-                <tr>
-                    <td><label for="fps-select">Max FPS</label></td>
-                    <td>
-                        <select id="fps-select">
-                            <option value="30">30</option>
-                            <option value="45">45</option>
-                            <option value="74" selected>74</option>
-                            <option value="120">120</option>
-                            <option value="500">500</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr><td colspan="2"><hr></td></tr>
-                <tr>
-                    <td><label for="nx-slider">Nx: <span id="nx-value">47</span></label></td>
-                    <td><input type="range" id="nx-slider" min="2" max="200" value="47"></td>
-                </tr>
-                <tr>
-                    <td><label for="ny-slider">Ny: <span id="ny-value">47</span></label></td>
-                    <td><input type="range" id="ny-slider" min="2" max="200" value="47"></td>
-                </tr>
-                <tr>
-                    <td><label for="x-min-slider">X Range</label></td>
-                    <td>
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <span id="x-min-display">-50</span>
-                            <input type="range" id="x-min-slider" min="-500" max="500" step="1" value="-50">
-                            <input type="range" id="x-max-slider" min="-500" max="500" step="1" value="50">
-                            <span id="x-max-display">50</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="y-min-slider">Y Range</label></td>
-                    <td>
-                        <div style="display:flex;align-items:center;gap:6px;">
-                            <span id="y-min-display">-50</span>
-                            <input type="range" id="y-min-slider" min="-500" max="500" step="1" value="-50">
-                            <input type="range" id="y-max-slider" min="-500" max="500" step="1" value="50">
-                            <span id="y-max-display">50</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="depth-scale-slider">Depth Scale: <span id="depth-scale-value">1</span></label></td>
-                    <td><input type="range" id="depth-scale-slider" min="0.05" max="3" value="1" step="0.05"></td>
-                </tr>
-                <tr><td colspan="2"><hr></td></tr>
-                <tr>
-                    <td><label>Dynamic Width</label></td>
-                    <td>
+            <div class="settings-section">
+                <h3>General Controls</h3>
+                <div class="button-group">
+                    <button id="reset-camera">Reset Camera</button>
+                    <button id="reset-shape">Reset Shape</button>
+                </div>
+                <div class="setting-row multi-toggle">
+                    <div class="toggle-pair">
+                        <label for="pause-toggle">Pause</label>
                         <label class="switch">
-                            <input type="checkbox" id="linewidth-toggle" checked>
+                            <input type="checkbox" id="pause-toggle">
                             <span class="slider round"></span>
                         </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Grid</label></td>
-                    <td>
+                    </div>
+                    <div class="toggle-pair">
+                        <label for="stop-vertex-recalc-toggle">Stop Vertex Recalc</label>
                         <label class="switch">
-                            <input type="checkbox" id="grid-toggle" checked>
+                            <input type="checkbox" id="stop-vertex-recalc-toggle">
                             <span class="slider round"></span>
                         </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Compass</label></td>
-                    <td>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <label for="fps-select">Max FPS</label>
+                    <select id="fps-select">
+                        <option value="30">30</option>
+                        <option value="45">45</option>
+                        <option value="74" selected>74</option>
+                        <option value="120">120</option>
+                        <option value="500">500</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="settings-section">
+                <h3>Grid Settings</h3>
+                <div class="setting-row">
+                    <label for="nx-slider">Nx: <span id="nx-value">47</span></label>
+                    <input type="range" id="nx-slider" min="2" max="200" value="47">
+                </div>
+                <div class="setting-row">
+                    <label for="ny-slider">Ny: <span id="ny-value">47</span></label>
+                    <input type="range" id="ny-slider" min="2" max="200" value="47">
+                </div>
+                <div class="setting-row">
+                    <label for="x-min-slider">X Range</label>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span id="x-min-display">-50</span>
+                        <input type="range" id="x-min-slider" min="-500" max="500" step="1" value="-50">
+                        <input type="range" id="x-max-slider" min="-500" max="500" step="1" value="50">
+                        <span id="x-max-display">50</span>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <label for="y-min-slider">Y Range</label>
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span id="y-min-display">-50</span>
+                        <input type="range" id="y-min-slider" min="-500" max="500" step="1" value="-50">
+                        <input type="range" id="y-max-slider" min="-500" max="500" step="1" value="50">
+                        <span id="y-max-display">50</span>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="settings-section">
+                <h3>Render Settings</h3>
+                <div class="setting-row">
+                    <label for="depth-scale-slider">Depth Scale: <span id="depth-scale-value">1</span></label>
+                    <input type="range" id="depth-scale-slider" min="0.05" max="3" value="1" step="0.05">
+                </div>
+                <div class="setting-row">
+                    <label for="coloring-mode-select">Coloring Mode</label>
+                    <select id="coloring-mode-select">
+                        <option value="axis">Axis</option>
+                        <option value="depth">Depth</option>
+                        <option value="none">None</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label for="coloring-axis-select">Coloring Axis</label>
+                    <select id="coloring-axis-select">
+                        <option value="x">X</option>
+                        <option value="y">Y</option>
+                        <option value="z" selected>Z</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <label for="linewidth-toggle">Dynamic Width</label>
+                    <label class="switch">
+                        <input type="checkbox" id="linewidth-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label for="display-points-toggle">Display Vertex Points</label>
+                    <label class="switch">
+                        <input type="checkbox" id="display-points-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label for="grid-toggle">Grid</label>
+                    <label class="switch">
+                        <input type="checkbox" id="grid-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label for="compass-toggle">Compass</label>
+                    <label class="switch">
+                        <input type="checkbox" id="compass-toggle" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label for="render-type-select">Render Type</label>
+                    <select id="render-type-select">
+                        <option value="line">Line</option>
+                        <option value="triangle">Triangle</option>
+                        <option value="light-solid">Light Solid</option>
+                        <option value="solid">Solid</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="settings-section">
+                <h3>Function Settings</h3>
+                <div class="setting-row">
+                    <label>Function Type</label>
+                    <div class="toggle-switch">
+                        <span class="toggle-label">Real</span>
                         <label class="switch">
-                            <input type="checkbox" id="compass-toggle" checked>
+                            <input type="checkbox" id="function-type-toggle">
                             <span class="slider round"></span>
                         </label>
-                    </td>
-                </tr>
-                <tr><td colspan="2"><hr></td></tr>
-                <tr>
-                    <td><label>Z Coloring</label></td>
-                    <td>
-                        <label class="switch">
-                            <input type="checkbox" id="z-coloring-toggle" checked>
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Display Vertex Points</label></td>
-                    <td>
-                        <label class="switch">
-                            <input type="checkbox" id="display-points-toggle">
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                </tr>
-                <tr><td colspan="2"><hr></td></tr>
-                <tr>
-                    <td><label>Function Type</label></td>
-                    <td>
-                        <div class="toggle-switch">
-                            <span class="toggle-label">Real</span>
-                            <label class="switch">
-                                <input type="checkbox" id="function-type-toggle">
-                                <span class="slider round"></span>
-                            </label>
-                            <span class="toggle-label">Complex</span>
-                        </div>
-                    </td>
-                </tr>
-                <tr><td colspan="2"><hr></td></tr>
-                <tr>
-                    <td><label>Depth Smoother</label></td>
-                    <td>
-                        <label class="switch">
-                            <input type="checkbox" id="depth-smoother-toggle">
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="depth-smoother-slider">Smoother Factor: <span id="depth-smoother-value">0.5</span></label></td>
-                    <td><input type="range" id="depth-smoother-slider" min="0" max="1" step="0.01" value="0.5"></td>
-                </tr>
-                <tr>
-                    <td><label for="render-type-select">Render Type</label></td>
-                    <td>
-                        <select id="render-type-select">
-                            <option value="line">Line</option>
-                            <option value="triangle">Triangle</option>
-                            <option value="solid">Solid</option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label>Multi Process</label></td>
-                    <td>
-                        <label class="switch">
-                            <input type="checkbox" id="multi-process-toggle" disabled>
-                            <span class="slider round"></span>
-                        </label>
-                    </td>
-                </tr>
-                <tr>
-                    <td><label for="multi-process-slider">Workers: <span id="multi-process-value">2</span></label></td>
-                    <td><input type="range" id="multi-process-slider" min="2" max="100" value="2" disabled></td>
-                </tr>
-            </table>
+                        <span class="toggle-label">Complex</span>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <label for="depth-smoother-toggle">Depth Smoother</label>
+                    <label class="switch">
+                        <input type="checkbox" id="depth-smoother-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="setting-row">
+                    <label for="depth-smoother-slider">Smoother Factor: <span id="depth-smoother-value">0.5</span></label>
+                    <input type="range" id="depth-smoother-slider" min="0" max="1" step="0.01" value="0.5">
+                </div>
+            </div>
         </aside>
     </div>
 
+    <script src="libs/chroma.min.js"></script>
     <script src="libs/perlin.js"></script>
     <script src="src/camera.js"></script>
     <script src="src/shape.js"></script>

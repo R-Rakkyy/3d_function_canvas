@@ -127,13 +127,20 @@
 
     function transform(expr){
         try{
-            if (expr.indexOf('(') !== -1) return expr
+            // Protect scientific notation (e.g. 1e-6) by temporarily replacing them
+            const exps = []
+            expr = expr.replace(/(\d+(?:\.\d+)?[eE][+\-]?\d+)/g, (m) => { exps.push(m); return `__EXP_${exps.length-1}__` })
+
+            // If expression contains dot-call (e.g., Math.sin or noise.simplex3),
+            // skip transformation to avoid inserting '*' inside dotted identifiers.
+            if (/\.[A-Za-z_]/.test(expr)) // skip dot function calls (e.g., Math.sin)
+                return expr.replace(/__EXP_(\d+)__/g, (_,n) => exps[Number(n)])
 
             expr = expr.replace(/(\d+(?:\.\d+)?(?:e[+\-]?\d+)?)(?=\s*[A-Za-z_\(])/gi, '$1 * ')
             expr = expr.replace(/\)\s*(?=[A-Za-z_\(])/g, ') * ')
 
-            if (/\.[A-Za-z_]/.test(expr)) // skip dot function calls (e.g., Math.sin)
-                return expr
+            // restore protected exponents
+            expr = expr.replace(/__EXP_(\d+)__/g, (_,n) => exps[Number(n)])
             
             const tokens = tokenize(expr)
             if (!tokens.length) 

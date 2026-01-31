@@ -4,6 +4,11 @@ class CustomFunctionManager {
         this.func    = this.createFunctionFromString(formula)
     }
 
+    updateFormula(newFormula) {
+        this.formula = newFormula
+        this.func    = this.createFunctionFromString(newFormula)
+    }
+
     createFunctionFromString(formula) {
         try {
             if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(formula)) {
@@ -15,10 +20,12 @@ class CustomFunctionManager {
                                 const res = fn(x, y, time)
                                 if (res && typeof res.abs === 'function') return res.abs()
                                 return Number(res) || 0
-                            } catch (e) { return 0; }
+                            } catch (e) { throw e; }
                         }
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.error('Error accessing function by name:', e)
+                }
             }
 
             let transformed = ParserUtils.transform(formula)
@@ -45,18 +52,18 @@ class CustomFunctionManager {
                         if (a instanceof Complex || b instanceof Complex) return __toC(a).sub(__toC(b))
                         return a - b
                     }
-                    const __pow = (a,b) => {
-                        return __toC(a).pow(__toC(b))
-                    }
+                    const __pow = (a,b) => { return __toC(a).pow(__toC(b)) }
 
                     const _expr = ` + JSON.stringify(transformed) + `
                     const _res = (function(){ return eval(_expr); })()
-                    if (_res && typeof _res.abs === 'function') return _res.abs()
+                    if (_res && typeof _res.toNumber === 'function') return _res.toNumber()
+                    else if (_res && typeof _res.abs === 'function') return _res.toNumber()
+                    if (_res === undefined) return 0
                     const _num = Number(_res)
                     return isFinite(_num) ? _num : 0
                 } catch (e) {
                     console.error('Error evaluating custom function:', e)
-                    return 0
+                    throw e
                 }
             `
 
@@ -67,37 +74,13 @@ class CustomFunctionManager {
                 try {
                     return generated(x, y, time)
                 } catch (e) {
-                    try {
-                        const altBody = `
-                            try {
-                                const z = new Complex(x, y)
-                                const i = new Complex(0, 1)
-                                const t = time
-                                const __toC = (v) => (v instanceof Complex) ? v : (typeof v === 'number' ? new Complex(v,0) : v)
-                                const __mul = (a,b) => { if (a instanceof Complex || b instanceof Complex) return __toC(a).mul(__toC(b)); return a * b; }
-                                const __div = (a,b) => { if (a instanceof Complex || b instanceof Complex) return __toC(a).div(__toC(b)); return a / b; }
-                                const __add = (a,b) => { if (a instanceof Complex || b instanceof Complex) return __toC(a).add(__toC(b)); return a + b; }
-                                const __sub = (a,b) => { if (a instanceof Complex || b instanceof Complex) return __toC(a).sub(__toC(b)); return a - b; }
-                                const __pow = (a,b) => { return __toC(a).pow(__toC(b)); }
-                                const _expr = ` + JSON.stringify(transformed) + `
-                                const _res = (function(){ return eval(_expr); })()
-                                return _res
-                            } catch (e) { throw e; }
-                        `
-                        const alt   = new Function('x','y','time', altBody)
-                        const _res  = alt(x, y, time)
-                        if (_res && typeof _res.abs === 'function') return _res.abs()
-                        const _num  = Number(_res)
-
-                        return isFinite(_num) ? _num : 0
-                    } catch (e2) {
-                        return 0
-                    }
+                    console.error('Error evaluating custom function (runtime):', e)
+                    throw e
                 }
             }
         } catch (e) {
             console.error("Error creating function:", e)
-            return (x, y, time) => 0
+            throw e
         }
     }
 }
@@ -142,17 +125,12 @@ const PRESET_COMPLEX_FUNCTIONS = [
     { name: "Mandelbrot",                   formula: "mandelbrot" },
     { name: "Burning Ship",                 formula: "burningShip" },
     { name: "Julia Set",                    formula: "julia" },
-    { name: "Square",                       formula: "z * z" },
-    { name: "Cube",                         formula: "z * z * z" },
     { name: "Sine of z",                    formula: "new Complex(Math.sin(z.re) * Math.cosh(z.im), Math.cos(z.re) * Math.sinh(z.im))" },
     { name: "Castle Ramparts",              formula: "new Complex(Math.floor(z.re), Math.floor(z.im))" },
-    { name: "Exponential",                  formula: "z.exp()" },
     { name: "Logarithm",                    formula: "z.log()" },
-    { name: "Reciprocal",                   formula: "new Complex(1,0).div(z)" },
     { name: "Absolute Value",               formula: "new Complex(z.abs(), 0)" },
     { name: "Complex Sine Wave",            formula: "new Complex(10 + 10 * Math.sin(0.005 * (z.re * z.re + z.im * z.im) - time), 0)" },
     { name: "Animated Spiral (Amplitude)",  formula: "z.pow(new Complex(0.5, 0.5)).mul(new Complex(Math.cos(time/8), Math.sin(time/8))).mul(new Complex(1 + 0.7 * Math.sin(time/6), 0))" },
-    { name: "Pulsating Exp",                formula: "z.exp().mul(new Complex(1 + 0.6 * Math.sin(time/7), 0))" },
     { name: "Mobius Twist",                 formula: "new Complex((z.re - 1) / (z.re + 1 + 1e-6), z.im)" },
     { name: "Log Ripple",                   formula: "new Complex(Math.log(z.abs() + 1) * Math.cos(z.re + time/10), Math.log(z.abs() + 1) * Math.sin(z.im + time/10))" },
     { name: "Complex Gaussian",             formula: "new Complex(30 * Math.exp(-(z.re * z.re + z.im * z.im)/200), 0)" }

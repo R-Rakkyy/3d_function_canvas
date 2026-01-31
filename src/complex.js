@@ -18,7 +18,10 @@ class Complex {
     }
 
     mul(other) {
-        if (!(other instanceof Complex))
+        // console.log(`this: ${this.toString()}, other: ${other.toString()} = ${(other instanceof Complex) ?
+        //     `Complex(${this.re * other.re - this.im * other.im}, ${this.re * other.im + this.im * other.re})` :
+        //     `Complex(${this.re * other}, ${this.im * other})`}`)
+        if (!(other instanceof Complex)) // 5 * (0 + 1i) =>
             return new Complex(this.re * other, this.im * other)
         return new Complex(
             this.re * other.re - this.im * other.im,
@@ -88,6 +91,10 @@ class Complex {
 
     toString() {
         return `${this.re} + ${this.im}i`
+    }
+
+    toNumber() {
+        return this.re + this.im
     }
 }
 
